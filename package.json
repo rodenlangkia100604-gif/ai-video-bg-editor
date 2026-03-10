@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "dependencies": {
-    "replicate": "^1.0.0"
+    "replicate": "^1.0.0",
+    "busboy": "^1.0.0"
   }
 }
