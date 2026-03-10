@@ -1,1 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Video Background Editor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>AI Background Video Editor</h1>
 
+        <div class="upload-box">
+            <input type="file" id="videoUpload">
+
+            <select id="background">
+                <option>Beach</option>
+                <option>City</option>
+                <option>Studio</option>
+                <option>Space</option>
+            </select>
+
+            <button onclick="uploadVideo()">Upload</button>
+        </div>
+
+        <p id="status"></p>
+
+        <video id="preview" controls></video>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
