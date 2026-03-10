@@ -1,47 +1,61 @@
-const Replicate = require("replicate");
-const Busboy = require("busboy");
-const fs = require("fs");
-const path = require("path");
+// netlify/functions/upload.js
+import Replicate from "replicate";
+import Busboy from "busboy";
 
-exports.handler = async function(event, context) {
-    if (event.httpMethod !== "POST") {
-        return { statusCode: 405, body: "Method Not Allowed" };
+export async function handler(event, context) {
+  try {
+    // Check if body exists
+    if (!event.body) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ success: false, error: "No file uploaded" }),
+      };
+    }
+
+    // Parse uploaded file (base64 from frontend)
+    const busboy = new Busboy({ headers: event.headers });
+    let fileData;
+
+    busboy.on("file", (fieldname, file, filename, encoding, mimetype) => {
+      const chunks = [];
+      file.on("data", (data) => chunks.push(data));
+      file.on("end", () => {
+        fileData = Buffer.concat(chunks);
+      });
+    });
+
+    await new Promise((resolve, reject) => {
+      busboy.on("finish", resolve);
+      busboy.on("error", reject);
+      busboy.end(Buffer.from(event.body, "base64"));
+    });
+
+    if (!fileData) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ success: false, error: "Failed to parse file" }),
+      };
     }
 
     // Initialize Replicate with your API key
     const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
 
-    return new Promise((resolve, reject) => {
-        const busboy = new Busboy({ headers: event.headers });
-        let videoFilePath = "";
+    // Call your AI model (replace with your green-screen model ID)
+    const output = await replicate.run(
+      "YOUR_GREEN_SCREEN_MODEL_ID",
+      { input: fileData }
+    );
 
-        // Save uploaded video to temp folder
-        busboy.on("file", (fieldname, file, filename) => {
-            videoFilePath = path.join("/tmp", filename);
-            const writeStream = fs.createWriteStream(videoFilePath);
-            file.pipe(writeStream);
-        });
-
-        busboy.on("finish", async () => {
-            try {
-                // Call the Replicate AI model for video background removal
-                const output = await replicate.run(
-                    "cjwbw/video-background-removal",
-                    { input: { video: fs.createReadStream(videoFilePath) } }
-                );
-
-                resolve({
-                    statusCode: 200,
-                    body: JSON.stringify({ message: "AI finished processing!", result: output })
-                });
-            } catch (err) {
-                resolve({
-                    statusCode: 500,
-                    body: JSON.stringify({ message: "AI processing failed", error: err.message })
-                });
-            }
-        });
-
-        busboy.end(Buffer.from(event.body, "base64"));
-    });
-};
+    // Return JSON result
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ success: true, output }),
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ success: false, error: error.message }),
+    };
+  }
+}
