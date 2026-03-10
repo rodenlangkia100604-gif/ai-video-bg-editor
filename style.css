@@ -1,1 +1,38 @@
+body {
+    background: #0f172a;
+    font-family: Arial, sans-serif;
+    color: white;
+    text-align: center;
+}
 
+.container {
+    margin-top: 100px;
+}
+
+.upload-box {
+    background: #1e293b;
+    padding: 30px;
+    width: 400px;
+    margin: auto;
+    border-radius: 10px;
+}
+
+button {
+    background: #22c55e;
+    border: none;
+    padding: 10px 20px;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+button:hover {
+    background: #16a34a;
+}
+
+video {
+    margin-top: 20px;
+    width: 400px;
+    border-radius: 5px;
+}
